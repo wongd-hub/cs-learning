@@ -4,14 +4,12 @@ from flask import Flask, render_template, request
 app = Flask(__name__)
 
 # Implement root route to call `index()`
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    
-    # Render template reads and renders HTML/template files
+
+    if request.method == "POST":
+        # Fix a bug where if the user inputs a blank name, "hello, " is printed.
+        name = request.form.get("name", "world")
+        return render_template("greet.html", name=name)
+
     return render_template("form.html")
-
-
-@app.route("/greet")
-def greet():
-    name = request.args.get("name", "world")
-    return render_template("greet.html", name = name)

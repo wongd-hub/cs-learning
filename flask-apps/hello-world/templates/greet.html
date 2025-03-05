@@ -2,6 +2,6 @@
 
 {% block body %}
 
-        greetings, {{ name }}
+        greetings, {% if name %}{{ name }}{% else %}world{% endif %}
 
 {% endblock %}
