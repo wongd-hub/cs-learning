@@ -4,24 +4,27 @@
 #include <ctype.h>
 
 /*
-    Naive hash table implementation using information from CS50
+    Naive hash table implementation based on CS50 concepts
 
     In essence, hash tables are arrays of linked lists, where each array 
-      element represents a key for the data you want to store. Since we're
-      using arrays to hold the keys - re-sizing will be difficult. And since 
+      element represents a pointer to the first node in the linked list under that key.
+      Since we're using arrays to hold the keys - re-sizing will be difficult. And since 
       we're using linked lists to hold nodes that fit under the same key, 
       operations involving these nodes will take longer - so we want to avoid key
       collision (we can control this with the hashing function chosen).
 
-    Known issues:
+    Known issues with this implementation of a hash table:
     - table_size and table (the hash table itself) are implemented in global 
       variables. The creation of a hash table would be better off wrapped up
-      in a function.
+      in a function, which will also allow us to parameterise how big the initial 
+      table is.
+    - This would be more readable if we split off the function defns and structs 
+      into separate files.
+    - A function to free memory has not been implemented yet, and there is currently
+      no function to selectively delete nodes (would involve modifying node->next etc).
 
 */
 
-
-// TODO: Split into multiple files once working
 
 /*
     Initial params
@@ -44,7 +47,6 @@ typedef struct node {
 
 } node;
 
-// TODO: Wrap in a function once this is working
 // Create array for keys
 //   Creates an array (called table) of pointers to nodes of size table_size.
 //   Then fills the array with NULL values to remove any leftover garbage values.
