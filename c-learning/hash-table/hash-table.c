@@ -20,8 +20,7 @@
       table is.
     - This would be more readable if we split off the function defns and structs 
       into separate files.
-    - A function to free memory has not been implemented yet, and there is currently
-      no function to selectively delete nodes (would involve modifying node->next etc).
+    - A function to delete the entire table hasn't been implemented yet.
 
 */
 
@@ -139,6 +138,51 @@ char *get(const char *key) {
 
 }
 
+// Delete node
+void delete(char *key) {
+
+    // Get index in overarching array of hash table
+    unsigned int index = hash(key, table_size);
+
+    // Node pointer
+    node *ptr = table[index];
+    node *prev = NULL;
+
+    if (!ptr) {
+        printf("No nodes to delete\n");
+        return;
+    }
+
+    // If node exists, traverse linked list to find where our node is
+    while (ptr) {
+
+        if (strcmp(ptr->key, key) == 0) {
+
+            // If deleting the head node, update table[index]
+            if (prev == NULL) {
+                table[index] = ptr->next;
+            } else {
+                prev->next = ptr->next;   // Bypass the node being deleted
+            }
+
+            // Free memory
+            free(ptr->key);
+            free(ptr->value);
+            free(ptr);
+            printf("Deleted key: %s\n", key);
+            return;  // Exit after deleting (assuming unique keys)
+
+        }
+
+        prev = ptr;      // Move prev to current node
+        ptr = ptr->next; // Move to next node
+
+    }
+
+    printf("Key not found: %s\n", key);
+
+}
+
 
 // Print table
 void print_table() {
@@ -176,6 +220,11 @@ int main(void) {
     } else {
         printf("%s not found\n", name);
     }
+
+    print_table();
+
+    delete("Agamemnon");
+    delete("Dennis");
 
     print_table();
 
@@ -221,6 +270,109 @@ int main(void) {
     > [28]: NULL
     > [29]: NULL
     > [30]: (Dennis, (491) 584-6065) -> NULL
+    > [31]: NULL
+    > [32]: NULL
+    > [33]: NULL
+    > [34]: NULL
+    > [35]: NULL
+    > [36]: NULL
+    > [37]: NULL
+    > [38]: NULL
+    > [39]: NULL
+    > [40]: NULL
+    > [41]: NULL
+    > [42]: NULL
+    > [43]: NULL
+    > [44]: NULL
+    > [45]: NULL
+    > [46]: NULL
+    > [47]: NULL
+    > [48]: NULL
+    > [49]: NULL
+    > [50]: NULL
+    > [51]: NULL
+    > [52]: NULL
+    > [53]: NULL
+    > [54]: NULL
+    > [55]: NULL
+    > [56]: NULL
+    > [57]: NULL
+    > [58]: NULL
+    > [59]: NULL
+    > [60]: NULL
+    > [61]: NULL
+    > [62]: NULL
+    > [63]: NULL
+    > [64]: (Mac, 1-436-705-3673) -> NULL
+    > [65]: NULL
+    > [66]: NULL
+    > [67]: NULL
+    > [68]: (Charlie, (634) 466-1630) -> NULL
+    > [69]: NULL
+    > [70]: NULL
+    > [71]: NULL
+    > [72]: NULL
+    > [73]: NULL
+    > [74]: NULL
+    > [75]: NULL
+    > [76]: NULL
+    > [77]: NULL
+    > [78]: NULL
+    > [79]: NULL
+    > [80]: NULL
+    > [81]: NULL
+    > [82]: NULL
+    > [83]: NULL
+    > [84]: NULL
+    > [85]: NULL
+    > [86]: NULL
+    > [87]: NULL
+    > [88]: NULL
+    > [89]: NULL
+    > [90]: NULL
+    > [91]: NULL
+    > [92]: NULL
+    > [93]: (Dee, 1-214-717-1808) -> NULL
+    > [94]: NULL
+    > [95]: NULL
+    > [96]: NULL
+    > [97]: NULL
+    > [98]: NULL
+    > [99]: NULL
+    > [100]: NULL
+    > No nodes to delete
+    > Deleted key: Dennis
+    > [0]: NULL
+    > [1]: NULL
+    > [2]: NULL
+    > [3]: NULL
+    > [4]: NULL
+    > [5]: NULL
+    > [6]: NULL
+    > [7]: NULL
+    > [8]: NULL
+    > [9]: NULL
+    > [10]: NULL
+    > [11]: NULL
+    > [12]: NULL
+    > [13]: NULL
+    > [14]: NULL
+    > [15]: NULL
+    > [16]: NULL
+    > [17]: NULL
+    > [18]: NULL
+    > [19]: NULL
+    > [20]: NULL
+    > [21]: NULL
+    > [22]: NULL
+    > [23]: NULL
+    > [24]: NULL
+    > [25]: NULL
+    > [26]: NULL
+    > [27]: NULL
+    > [28]: NULL
+    > [29]: NULL
+    > [30]: NULL
     > [31]: NULL
     > [32]: NULL
     > [33]: NULL
