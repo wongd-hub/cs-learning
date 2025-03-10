@@ -260,6 +260,10 @@ int main(void) {
 
     free_table(ht);
 
+    // We see that Dee and Charlie have keys that collide in this small of a table
+    printf("Dee hash: %i\n", hash("Dee", TABLE_SIZE));
+    printf("Charlie hash: %i\n", hash("Charlie", TABLE_SIZE));
+
     return 0;
 
 }
@@ -295,5 +299,7 @@ int main(void) {
     > [8]: (Frank, (641) 848-9738) -> NULL
     > [9]: NULL
     > [10]: NULL
+    > Dee hash: 2
+    > Charlie hash: 2
 
 */
