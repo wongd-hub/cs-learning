@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#define TABLE_SIZE 11  // Define a fixed-size hash table
 
 /*
     Naive hash table implementation based on CS50 concepts
@@ -14,23 +15,10 @@
       collision (we can control this with the hashing function chosen).
 
     Known issues with this implementation of a hash table:
-    - table_size and table (the hash table itself) are implemented in global 
-      variables. The creation of a hash table would be better off wrapped up
-      in a function, which will also allow us to parameterise how big the initial 
-      table is.
     - This would be more readable if we split off the function defns and structs 
       into separate files.
-    - A function to delete the entire table hasn't been implemented yet.
 
 */
-
-
-/*
-    Initial params
-*/
-
-// Choosing a prime number for the initial size since that reduces collision chance even more
-int table_size = 101;
 
 
 /*
@@ -46,12 +34,10 @@ typedef struct node {
 
 } node;
 
-// Create array for keys
-//   Creates an array (called table) of pointers to nodes of size table_size.
-//   Then fills the array with NULL values to remove any leftover garbage values.
-// NB: C doesn't allow variable length arrays in the global scope - workaround for now
-node *table[101] = {NULL};
-
+// Overarching struct for the hash table
+typedef struct {
+    node *buckets[TABLE_SIZE]; // Array of pointers to linked lists
+} hash_table;
 
 /*
     Hash function
@@ -80,14 +66,32 @@ unsigned int hash(const char *word, const int table_size) {
 
 */
 
+// Create hash table
+hash_table *create_table() { // Returns a pointer to the hash table
+
+    hash_table *ht = malloc(sizeof(hash_table));  // Allocate memory for the hash table struct
+
+    if (!ht) {
+        printf("Memory allocation failed\n");
+        return NULL;
+    }
+
+    // Initialize all buckets to NULL (drop all garbage values)
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        ht->buckets[i] = NULL;
+    }
+
+    return ht;
+}
+
 // Insert into the hash table
-void insert(const char *key, const char *value) {
+void insert(hash_table *ht, const char *key, const char *value) {
 
     // Get index in overarching array of hash table
-    unsigned int index = hash(key, table_size);
+    unsigned int index = hash(key, TABLE_SIZE);
 
     // Check if key already exists and update value
-    node *current = table[index];
+    node *current = ht->buckets[index];
     while (current) {
         if (strcmp(current->key, key) == 0) { // If key exists, update value
             free(current->value);             // Yeet old value
@@ -106,30 +110,30 @@ void insert(const char *key, const char *value) {
     }
 
     // Copy name and number
-    new_node->key   = strdup(key);
-    new_node->value = strdup(value);
-    new_node->next  = table[index];  // Insert at the beginning of the linked list
-    table[index]    = new_node;      // Update head pointer
+    new_node->key      = strdup(key);
+    new_node->value    = strdup(value);
+    new_node->next     = ht->buckets[index];  // Insert at the beginning of the linked list
+    ht->buckets[index] = new_node;            // Update head pointer
 
 }
 
 
 // Get from hash table
-char *get(const char *key) {
+char *get(hash_table *ht, const char *key) {
 
     // Get index in overarching array of hash table
-    unsigned int index = hash(key, table_size);
+    unsigned int index = hash(key, TABLE_SIZE);
 
     // Get pointer to first node under this key
-    node *node_p = table[index];
+    node *cursor = ht->buckets[index];
 
     // Then from there, we just traverse the linked list until we find the key we're looking for
-    while (node_p) {
+    while (cursor) {
 
-        if (strcmp(node_p->key, key) == 0) {
-            return node_p->value;
+        if (strcmp(cursor->key, key) == 0) {
+            return cursor->value;
         }
-        node_p = node_p->next;
+        cursor = cursor->next;
 
     }
 
@@ -139,13 +143,13 @@ char *get(const char *key) {
 }
 
 // Delete node
-void delete(char *key) {
+void delete(hash_table *ht, const char *key) {
 
     // Get index in overarching array of hash table
-    unsigned int index = hash(key, table_size);
+    unsigned int index = hash(key, TABLE_SIZE);
 
     // Node pointer
-    node *ptr = table[index];
+    node *ptr  = ht->buckets[index];
     node *prev = NULL;
 
     if (!ptr) {
@@ -158,9 +162,9 @@ void delete(char *key) {
 
         if (strcmp(ptr->key, key) == 0) {
 
-            // If deleting the head node, update table[index]
+            // If deleting the head node, update the hash table array
             if (prev == NULL) {
-                table[index] = ptr->next;
+                ht->buckets[index] = ptr->next;
             } else {
                 prev->next = ptr->next;   // Bypass the node being deleted
             }
@@ -185,28 +189,54 @@ void delete(char *key) {
 
 
 // Print table
-void print_table() {
-    for (int i = 0; i < table_size; i++) {
+void print_table(hash_table *ht) {
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+
         printf("[%d]: ", i);
-        node *cursor = table[i];
+        node *cursor = ht->buckets[i];
         while (cursor) {
             printf("(%s, %s) -> ", cursor->key, cursor->value);
             cursor = cursor->next;
         }
         printf("NULL\n");
+
     }
+
 }
 
+// Free table
+void free_table(hash_table *ht) {
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+
+        node *cursor = ht->buckets[i];
+        while (cursor) {
+            node *temp = cursor;
+            cursor = cursor->next;
+            free(temp->key);
+            free(temp->value);
+            free(temp);
+        }
+
+    }
+
+    free(ht);
+
+}
 
 int main(void) {
 
-    insert("Charlie", "(634) 466-1630");
-    insert("Mac", "1-436-705-3673");
-    insert("Dee", "1-214-717-1808");
-    insert("Dennis", "(491) 584-6065");
+    hash_table *ht = create_table();
+
+    insert(ht, "Charlie", "(634) 466-1630");
+    insert(ht, "Mac", "1-436-705-3673");
+    insert(ht, "Dee", "1-214-717-1808");
+    insert(ht, "Dennis", "(491) 584-6065");
+    insert(ht, "Frank", "(641) 848-9738");
 
     char *name = "Agamemnon";
-    char *result = get(name);  // Declare and initialize `result`
+    char *result = get(ht, name);  // Declare and initialize `result`
     if (result) {
         printf("Found %s: %s\n", name, result);
     } else {
@@ -214,19 +244,21 @@ int main(void) {
     }
 
     name = "Dennis";
-    result = get(name);  // result var already initialised
+    result = get(ht, name);  // result var already initialised
     if (result) {
         printf("Found %s: %s\n", name, result);
     } else {
         printf("%s not found\n", name);
     }
 
-    print_table();
+    print_table(ht);
 
-    delete("Agamemnon");
-    delete("Dennis");
+    delete(ht, "Agamemnon");
+    delete(ht, "Dennis");
 
-    print_table();
+    print_table(ht);
+
+    free_table(ht);
 
     return 0;
 
